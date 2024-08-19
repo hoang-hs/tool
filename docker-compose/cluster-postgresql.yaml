@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  postgres-primary:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 1
+      POSTGRES_USER: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - primary_data:/var/lib/postgresql/data
+    networks:
+      - postgres-network
+
+  postgres-replica:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 2
+      POSTGRES_USER: root2
+      POSTGRES_MASTER_HOST: postgres-primary
+    ports:
+      - "5433:5432"
+    depends_on:
+      - postgres-primary
+    volumes:
+      - replica_data:/var/lib/postgresql/data
+    networks:
+      - postgres-network
+
+volumes:
+  primary_data:
+  replica_data:
+
+networks:
+  postgres-network:
+

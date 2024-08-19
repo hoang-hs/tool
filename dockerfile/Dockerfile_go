@@ -1,0 +1,14 @@
+FROM golang:1.22-alpine AS build
+
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download &  go mod verify
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o run .
+
+# Now copy it into our distroless image.
+FROM gcr.io/distroless/static-debian11
+WORKDIR /app
+COPY --from=build /build/run .
+CMD ["/app/run"]
